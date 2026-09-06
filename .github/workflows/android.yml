@@ -19,8 +19,9 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Unzip Source Code
+    - name: Unzip and Fix Missing Configurations
       run: |
+        # জিপ ফাইল আনজিপ করা
         unzip CarromPracticeAimTrainer.zip -d extracted_source
         SUBFOLDER=$(find extracted_source -maxdepth 1 -minimum-depth 1 -type d | head -n 1)
         if [ -n "$SUBFOLDER" ]; then
@@ -30,11 +31,38 @@ jobs:
           mv extracted_source/* . 2>/dev/null || true
           mv extracted_source/.* . 2>/dev/null || true
         fi
+        
+        # খালি settings.gradle ফাইলটিতে প্রয়োজনীয় কোড অটোমেটিক বসানো
+        cat << 'EOF' > settings.gradle
+        pluginManagement {
+            repositories {
+                google()
+                mavenCentral()
+                gradlePluginPortal()
+            }
+        }
+        dependencyResolutionManagement {
+            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositories {
+                google()
+                mavenCentral()
+            }
+        }
+        rootProject.name = "CarromPracticeAimTrainer"
+        include ':app'
+        EOF
 
-    - name: Force Generate Missing Gradle Wrapper
+        # খালি build.gradle ফাইলটিতে প্রয়োজনীয় কোড অটোমেটিক বসানো
+        cat << 'EOF' > build.gradle
+        plugins {
+            id 'com.android.application' version '8.0.2' apply false
+            id 'com.android.library' version '8.0.2' apply false
+        }
+        EOF
+
+    - name: Generate Gradle Wrapper
       run: |
-        # ফাইল ক্লাশ এড়াতে ফোর্সফুলি বা ওভাররাইট মোডে জেনারেট করা
-        gradle wrapper --gradle-version 8.0 --validate-url
+        gradle wrapper --gradle-version 8.0.2
 
     - name: Grant Execute Permission for Gradle
       run: chmod +x gradlew
