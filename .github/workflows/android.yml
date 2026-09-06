@@ -31,10 +31,10 @@ jobs:
           mv extracted_source/.* . 2>/dev/null || true
         fi
 
-    - name: Initialize Gradle and Generate Wrapper
+    - name: Force Generate Missing Gradle Wrapper
       run: |
-        gradle init --type basic --dsl groovy
-        gradle wrapper --gradle-version 8.0
+        # ফাইল ক্লাশ এড়াতে ফোর্সফুলি বা ওভাররাইট মোডে জেনারেট করা
+        gradle wrapper --gradle-version 8.0 --validate-url
 
     - name: Grant Execute Permission for Gradle
       run: chmod +x gradlew
